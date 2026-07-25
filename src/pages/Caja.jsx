@@ -21,7 +21,7 @@ export default function Caja() {
       const [c, h, p] = await Promise.all([
         api.get('/caja/actual'),
         api.get('/caja/historial'),
-        api.get('/pedidos?activos=true'),
+        api.get('/pedidos?porCobrar=true'),
       ]);
       setCaja(c.data.item);
       setHistorial(h.data.items);
@@ -35,15 +35,18 @@ export default function Caja() {
     cargar();
   }, []);
 
-  // Tiempo real: los pedidos que crean los meseros llegan a la sala de caja.
+  // Un pedido sale de la lista de la caja SOLO cuando ya no está por cobrar:
+  // es decir, cuando fue facturado (pagado) o cancelado. Que cocina lo marque
+  // como "entregado" NO lo saca de la caja: sigue pendiente de cobro.
+  const yaNoSeCobra = (p) => p.facturado === true || p.estado === 'cancelado';
+
   useSocketEvent('pedido:nuevo', (p) => {
+    if (yaNoSeCobra(p)) return;
     setPedidos((prev) => (prev.some((x) => x._id === p._id) ? prev : [p, ...prev]));
   });
   useSocketEvent('pedido:actualizado', (p) => {
     setPedidos((prev) => {
-      const activo = ['pendiente', 'preparando', 'listo'].includes(p.estado);
-      // Si el pedido dejó de estar activo (facturado/entregado/cancelado), sale de la lista.
-      if (!activo || p.facturado) return prev.filter((x) => x._id !== p._id);
+      if (yaNoSeCobra(p)) return prev.filter((x) => x._id !== p._id);
       return prev.some((x) => x._id === p._id)
         ? prev.map((x) => (x._id === p._id ? p : x))
         : [p, ...prev];
