@@ -9,6 +9,7 @@ import POS from './pages/POS.jsx';
 import Caja from './pages/Caja.jsx';
 import Pedidos from './pages/Pedidos.jsx';
 import Mesero from './pages/Mesero.jsx';
+import Mesas from './pages/Mesas.jsx';
 import Cocina from './pages/Cocina.jsx';
 import Productos from './pages/Productos.jsx';
 import Inventario from './pages/Inventario.jsx';
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/caja" element={<Protegido roles={['admin', 'cajero']}><Caja /></Protegido>} />
         <Route path="/pedidos" element={<Protegido roles={['admin', 'cajero']}><Pedidos /></Protegido>} />
         <Route path="/mesero" element={<Protegido roles={['admin', 'mesero']}><Mesero /></Protegido>} />
+        <Route path="/mesas" element={<Protegido roles={['admin']}><Mesas /></Protegido>} />
         <Route path="/cocina" element={<Protegido roles={['admin', 'cocina']}><Cocina /></Protegido>} />
         <Route path="/productos" element={<Protegido roles={['admin', 'cajero']}><Productos /></Protegido>} />
         <Route path="/inventario" element={<Protegido roles={['admin']}><Inventario /></Protegido>} />

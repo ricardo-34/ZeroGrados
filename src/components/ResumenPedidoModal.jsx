@@ -2,13 +2,15 @@ import { Modal } from './UI.jsx';
 import { money } from '../utils/format.js';
 
 // Resumen del pedido para que el mesero confirme antes de enviarlo a cocina.
-export default function ResumenPedidoModal({ mesa, carrito, onClose, onConfirmar, enviando }) {
+// modoAgregar=true cuando se están sumando productos a una cuenta de mesa
+// ya abierta, en vez de crear un pedido nuevo.
+export default function ResumenPedidoModal({ mesaLabel, carrito, onClose, onConfirmar, enviando, modoAgregar }) {
   const total = carrito.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
   const totalItems = carrito.reduce((acc, i) => acc + i.cantidad, 0);
 
   return (
     <Modal
-      title="Confirmar pedido"
+      title={modoAgregar ? 'Agregar productos a la cuenta' : 'Confirmar pedido'}
       onClose={onClose}
       footer={
         <>
@@ -16,15 +18,20 @@ export default function ResumenPedidoModal({ mesa, carrito, onClose, onConfirmar
             Seguir editando
           </button>
           <button className="btn btn-primary" onClick={onConfirmar} disabled={enviando}>
-            {enviando ? 'Enviando...' : 'Confirmar y enviar a cocina'}
+            {enviando ? 'Enviando...' : modoAgregar ? 'Confirmar y enviar a cocina' : 'Confirmar y enviar a cocina'}
           </button>
         </>
       }
     >
       <div className="mb" style={{ fontSize: 14 }}>
-        <span className="text-muted">Mesa / Referencia: </span>
-        <strong>{mesa || 'Sin especificar'}</strong>
+        <span className="text-muted">Mesa: </span>
+        <strong>{mesaLabel || 'Sin especificar'}</strong>
       </div>
+      {modoAgregar && (
+        <div className="alert alert-warn" style={{ marginBottom: 14 }}>
+          Estos productos se sumarán a la cuenta que ya está abierta en esta mesa.
+        </div>
+      )}
 
       <div className="table-wrap mb">
         <table className="tbl">
