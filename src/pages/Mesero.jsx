@@ -3,6 +3,8 @@ import api from '../api/client.js';
 import { useSocketEvent } from '../hooks/useSocket.js';
 import { money, fecha } from '../utils/format.js';
 import { Alert, Field, Badge } from '../components/UI.jsx';
+import ProductoDetalleModal from '../components/ProductoDetalleModal.jsx';
+import ResumenPedidoModal from '../components/ResumenPedidoModal.jsx';
 
 export default function Mesero() {
   const [productos, setProductos] = useState([]);
@@ -12,6 +14,9 @@ export default function Mesero() {
   const [error, setError] = useState('');
   const [ok, setOk] = useState('');
   const [busqueda, setBusqueda] = useState('');
+  const [detalleProducto, setDetalleProducto] = useState(null);
+  const [mostrarResumen, setMostrarResumen] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   const cargar = async () => {
     try {
@@ -58,10 +63,17 @@ export default function Mesero() {
       prev.map((i) => (i.producto === id ? { ...i, cantidad: i.cantidad + delta } : i)).filter((i) => i.cantidad > 0)
     );
 
-  const enviar = async () => {
+  const abrirResumen = () => {
     setError('');
     setOk('');
     if (carrito.length === 0) return setError('Agrega productos al pedido');
+    setMostrarResumen(true);
+  };
+
+  const confirmarEnvio = async () => {
+    setError('');
+    setOk('');
+    setEnviando(true);
     try {
       const res = await api.post('/pedidos', {
         mesa,
@@ -74,9 +86,12 @@ export default function Mesero() {
       setOk(`Pedido #${res.data.item.numero} enviado a cocina`);
       setCarrito([]);
       setMesa('');
+      setMostrarResumen(false);
       cargar();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -86,7 +101,7 @@ export default function Mesero() {
       <Alert type="error">{error}</Alert>
       <Alert type="success">{ok}</Alert>
 
-      <div className="grid" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
+      <div className="mesero-grid">
         <div className="card">
           <input
             className="input mb"
@@ -94,24 +109,20 @@ export default function Mesero() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
+          <div className="mesero-productos-grid">
             {filtrados.map((p) => (
-              <button
-                key={p._id}
-                onClick={() => agregar(p)}
-                style={{
-                  border: '1px solid var(--gris-borde)',
-                  borderRadius: 10,
-                  padding: 12,
-                  background: '#fff',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  minHeight: 44,
-                }}
-              >
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{p.nombre}</div>
-                <div style={{ color: 'var(--verde-esmeralda)', fontWeight: 700 }}>{money(p.precioVenta)}</div>
-              </button>
+              <div key={p._id} className="mesero-producto-card">
+                <button className="mesero-producto-main" onClick={() => agregar(p)}>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{p.nombre}</div>
+                  <div style={{ color: 'var(--verde-esmeralda)', fontWeight: 700 }}>{money(p.precioVenta)}</div>
+                </button>
+                <button
+                  className="btn btn-outline btn-sm mesero-producto-detalle-btn"
+                  onClick={() => setDetalleProducto(p)}
+                >
+                  Ver detalles
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -146,11 +157,38 @@ export default function Mesero() {
             ))
           )}
 
-          <button className="btn btn-primary btn-block mt" onClick={enviar} disabled={carrito.length === 0}>
-            Enviar pedido a cocina
+          {carrito.length > 0 && (
+            <div className="flex-between mt" style={{ paddingTop: 10, borderTop: '1px solid var(--gris-borde)' }}>
+              <span className="text-muted">Total</span>
+              <strong style={{ fontSize: 18, color: 'var(--verde-esmeralda)' }}>
+                {money(carrito.reduce((acc, i) => acc + i.precio * i.cantidad, 0))}
+              </strong>
+            </div>
+          )}
+
+          <button className="btn btn-primary btn-block mt" onClick={abrirResumen} disabled={carrito.length === 0}>
+            Revisar y enviar pedido
           </button>
         </div>
       </div>
+
+      {detalleProducto && (
+        <ProductoDetalleModal
+          producto={detalleProducto}
+          onClose={() => setDetalleProducto(null)}
+          onAgregar={agregar}
+        />
+      )}
+
+      {mostrarResumen && (
+        <ResumenPedidoModal
+          mesa={mesa}
+          carrito={carrito}
+          enviando={enviando}
+          onClose={() => setMostrarResumen(false)}
+          onConfirmar={confirmarEnvio}
+        />
+      )}
 
       <div className="card mt">
         <h2 className="mb">Mis pedidos recientes</h2>

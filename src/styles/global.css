@@ -165,7 +165,47 @@ table.tbl tr:hover td { background: var(--gris-fondo); }
   box-shadow: var(--sombra-md);
 }
 
+/* Módulo Mesero */
+.mesero-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1.4fr 1fr;
+}
+.mesero-productos-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+.mesero-producto-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--gris-borde);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+.mesero-producto-main {
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  min-height: 44px;
+}
+.mesero-producto-detalle-btn {
+  width: 100%;
+}
+
 @media (max-width: 768px) {
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .mesero-grid { grid-template-columns: 1fr; }
+  .mesero-productos-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
   h1 { font-size: 22px; }
+}
+
+@media (max-width: 480px) {
+  .mesero-productos-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal { padding: 16px; border-radius: 12px 12px 0 0; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
 }

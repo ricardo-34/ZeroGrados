@@ -7,7 +7,16 @@ import { Alert, Modal, Field, Empty } from '../components/UI.jsx';
 const VACIO = {
   nombre: '', descripcion: '', categoria: '', codigoBarras: '',
   precioCompra: 0, precioVenta: 0, iva: 0, stock: 0, stockMinimo: 5, activo: true,
+  imagenUrl: '', observaciones: '', queIncluye: '', ingredientes: [],
+  mediaUrl: '', mediaTipo: '',
 };
+
+// Convierte el textarea de ingredientes (uno por línea o separados por coma) en array
+const parseIngredientes = (texto) =>
+  texto
+    .split(/[\n,]/)
+    .map((i) => i.trim())
+    .filter(Boolean);
 
 export default function Productos() {
   const { usuario } = useAuth();
@@ -159,9 +168,69 @@ export default function Productos() {
           <Field label="Nombre">
             <input className="input" value={modal.nombre} onChange={(e) => setModal({ ...modal, nombre: e.target.value })} />
           </Field>
-          <Field label="Descripción">
-            <input className="input" value={modal.descripcion} onChange={(e) => setModal({ ...modal, descripcion: e.target.value })} />
+          <Field label="Descripción detallada">
+            <textarea
+              className="input"
+              style={{ minHeight: 70, resize: 'vertical' }}
+              placeholder="Describe el producto para que el mesero pueda explicarlo al cliente..."
+              value={modal.descripcion}
+              onChange={(e) => setModal({ ...modal, descripcion: e.target.value })}
+            />
           </Field>
+          <Field label="Qué incluye">
+            <textarea
+              className="input"
+              style={{ minHeight: 50, resize: 'vertical' }}
+              placeholder="Ej: 2 bolas de helado, topping y galleta"
+              value={modal.queIncluye}
+              onChange={(e) => setModal({ ...modal, queIncluye: e.target.value })}
+            />
+          </Field>
+          <Field label="Ingredientes / características (uno por línea o separados por coma)">
+            <textarea
+              className="input"
+              style={{ minHeight: 50, resize: 'vertical' }}
+              placeholder="Ej: Leche, fresa, chocolate, nueces"
+              value={(modal.ingredientes || []).join('\n')}
+              onChange={(e) => setModal({ ...modal, ingredientes: parseIngredientes(e.target.value) })}
+            />
+          </Field>
+          <Field label="Observaciones">
+            <textarea
+              className="input"
+              style={{ minHeight: 50, resize: 'vertical' }}
+              placeholder="Notas internas o recomendaciones (ej: contiene frutos secos)"
+              value={modal.observaciones}
+              onChange={(e) => setModal({ ...modal, observaciones: e.target.value })}
+            />
+          </Field>
+          <div className="grid grid-2">
+            <Field label="Imagen (URL)">
+              <input className="input" value={modal.imagenUrl} onChange={(e) => setModal({ ...modal, imagenUrl: e.target.value })} placeholder="https://..." />
+            </Field>
+            <Field label="GIF / animación / video (URL)">
+              <input className="input" value={modal.mediaUrl} onChange={(e) => setModal({ ...modal, mediaUrl: e.target.value })} placeholder="https://..." />
+            </Field>
+          </div>
+          {modal.mediaUrl && (
+            <Field label="Tipo de media">
+              <select className="select" value={modal.mediaTipo} onChange={(e) => setModal({ ...modal, mediaTipo: e.target.value })}>
+                <option value="">— Selecciona —</option>
+                <option value="imagen">Imagen</option>
+                <option value="gif">GIF / animación</option>
+                <option value="video">Video corto</option>
+              </select>
+            </Field>
+          )}
+          {modal.mediaUrl && (
+            <div className="mb" style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--gris-borde)' }}>
+              {modal.mediaTipo === 'video' ? (
+                <video src={modal.mediaUrl} controls style={{ width: '100%', maxHeight: 220, display: 'block' }} />
+              ) : (
+                <img src={modal.mediaUrl} alt="Vista previa" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }} />
+              )}
+            </div>
+          )}
           <div className="grid grid-2">
             <Field label="Categoría">
               <select className="select" value={modal.categoria} onChange={(e) => setModal({ ...modal, categoria: e.target.value })}>
