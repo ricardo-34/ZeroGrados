@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext.jsx';
 import Layout from './components/Layout.jsx';
 import { Loading } from './components/UI.jsx';
 
+import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import POS from './pages/POS.jsx';
@@ -45,6 +46,13 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Landing pública: la ve cualquiera que no haya iniciado sesión.
+          Si ya hay sesión, se redirige a su panel según el rol. */}
+      <Route
+        path="/"
+        element={usuario ? <Navigate to={INICIO[usuario.rol] || '/pos'} replace /> : <Landing />}
+      />
+
       <Route
         path="/login"
         element={usuario ? <Navigate to={INICIO[usuario.rol] || '/pos'} replace /> : <Login />}
@@ -69,7 +77,8 @@ export default function App() {
         <Route path="/configuracion" element={<Protegido roles={['admin']}><Configuracion /></Protegido>} />
       </Route>
 
-      <Route path="*" element={<Navigate to={usuario ? (INICIO[usuario.rol] || '/pos') : '/login'} replace />} />
+      {/* Cualquier ruta desconocida: al panel si hay sesión, o a la landing. */}
+      <Route path="*" element={<Navigate to={usuario ? (INICIO[usuario.rol] || '/pos') : '/'} replace />} />
     </Routes>
   );
 }
