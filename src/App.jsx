@@ -1,0 +1,73 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext.jsx';
+import Layout from './components/Layout.jsx';
+import { Loading } from './components/UI.jsx';
+
+import Login from './pages/Login.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import POS from './pages/POS.jsx';
+import Caja from './pages/Caja.jsx';
+import Pedidos from './pages/Pedidos.jsx';
+import Mesero from './pages/Mesero.jsx';
+import Cocina from './pages/Cocina.jsx';
+import Productos from './pages/Productos.jsx';
+import Inventario from './pages/Inventario.jsx';
+import Compras from './pages/Compras.jsx';
+import Clientes from './pages/Clientes.jsx';
+import Proveedores from './pages/Proveedores.jsx';
+import Reportes from './pages/Reportes.jsx';
+import Contabilidad from './pages/Contabilidad.jsx';
+import Usuarios from './pages/Usuarios.jsx';
+import Configuracion from './pages/Configuracion.jsx';
+
+// Ruta de inicio según rol
+const INICIO = {
+  admin: '/dashboard',
+  cajero: '/pos',
+  mesero: '/mesero',
+  cocina: '/cocina',
+};
+
+function Protegido({ roles, children }) {
+  const { usuario, cargando } = useAuth();
+  if (cargando) return <Loading text="Verificando sesión..." />;
+  if (!usuario) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(usuario.rol)) {
+    return <Navigate to={INICIO[usuario.rol] || '/login'} replace />;
+  }
+  return children;
+}
+
+export default function App() {
+  const { usuario, cargando } = useAuth();
+  if (cargando) return <Loading text="Cargando Zero Grados..." />;
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={usuario ? <Navigate to={INICIO[usuario.rol] || '/pos'} replace /> : <Login />}
+      />
+
+      <Route element={<Protegido><Layout /></Protegido>}>
+        <Route path="/dashboard" element={<Protegido roles={['admin']}><Dashboard /></Protegido>} />
+        <Route path="/pos" element={<Protegido roles={['admin', 'cajero']}><POS /></Protegido>} />
+        <Route path="/caja" element={<Protegido roles={['admin', 'cajero']}><Caja /></Protegido>} />
+        <Route path="/pedidos" element={<Protegido roles={['admin', 'cajero']}><Pedidos /></Protegido>} />
+        <Route path="/mesero" element={<Protegido roles={['admin', 'mesero']}><Mesero /></Protegido>} />
+        <Route path="/cocina" element={<Protegido roles={['admin', 'cocina']}><Cocina /></Protegido>} />
+        <Route path="/productos" element={<Protegido roles={['admin', 'cajero']}><Productos /></Protegido>} />
+        <Route path="/inventario" element={<Protegido roles={['admin']}><Inventario /></Protegido>} />
+        <Route path="/compras" element={<Protegido roles={['admin']}><Compras /></Protegido>} />
+        <Route path="/clientes" element={<Protegido roles={['admin', 'cajero']}><Clientes /></Protegido>} />
+        <Route path="/proveedores" element={<Protegido roles={['admin']}><Proveedores /></Protegido>} />
+        <Route path="/reportes" element={<Protegido roles={['admin', 'cajero']}><Reportes /></Protegido>} />
+        <Route path="/contabilidad" element={<Protegido roles={['admin']}><Contabilidad /></Protegido>} />
+        <Route path="/usuarios" element={<Protegido roles={['admin']}><Usuarios /></Protegido>} />
+        <Route path="/configuracion" element={<Protegido roles={['admin']}><Configuracion /></Protegido>} />
+      </Route>
+
+      <Route path="*" element={<Navigate to={usuario ? (INICIO[usuario.rol] || '/pos') : '/login'} replace />} />
+    </Routes>
+  );
+}
