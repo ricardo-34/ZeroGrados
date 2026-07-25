@@ -41,7 +41,30 @@ export default function Mesero() {
   });
   useSocketEvent('pedido:listo', (pedido) => {
     setOk(`¡Pedido #${pedido.numero} está LISTO para entregar!`);
+    reproducirAlertaListo();
   });
+
+  // Sonido de notificación cuando un pedido está listo para entregar
+  function reproducirAlertaListo() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const tocar = (freq, inicio, duracion) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.25, ctx.currentTime + inicio);
+        osc.start(ctx.currentTime + inicio);
+        osc.stop(ctx.currentTime + inicio + duracion);
+      };
+      // dos tonos ascendentes tipo "campanita"
+      tocar(700, 0, 0.15);
+      tocar(1000, 0.18, 0.2);
+    } catch (_) {
+      // navegador sin soporte o sin interacción previa del usuario
+    }
+  }
 
   const filtrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase())

@@ -62,9 +62,28 @@ export default function Productos() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm('¿Desactivar este producto?')) return;
+    if (!window.confirm('¿Desactivar este producto? Dejará de verse en el módulo de Mesero.')) return;
     try {
       await api.delete(`/productos/${id}`);
+      cargar();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const activar = async (id) => {
+    try {
+      await api.put(`/productos/${id}`, { activo: true });
+      cargar();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const eliminarDefinitivo = async (id) => {
+    if (!window.confirm('Esta acción elimina el producto de forma PERMANENTE y no se puede deshacer. ¿Deseas continuar?')) return;
+    try {
+      await api.delete(`/productos/${id}/definitivo`);
       cargar();
     } catch (err) {
       setError(err.message);
@@ -138,11 +157,18 @@ export default function Productos() {
                     </td>
                     {esAdmin && (
                       <td>
-                        <div className="flex gap-sm">
+                        <div className="flex gap-sm flex-wrap">
                           <button className="btn btn-outline btn-sm" onClick={() => setModal({ ...p, categoria: p.categoria?._id || '' })}>
                             Editar
                           </button>
-                          <button className="btn btn-danger btn-sm" onClick={() => eliminar(p._id)}>✕</button>
+                          {p.activo ? (
+                            <button className="btn btn-danger btn-sm" onClick={() => eliminar(p._id)}>Desactivar</button>
+                          ) : (
+                            <>
+                              <button className="btn btn-secondary btn-sm" onClick={() => activar(p._id)}>Activar</button>
+                              <button className="btn btn-danger btn-sm" onClick={() => eliminarDefinitivo(p._id)}>Eliminar definitivo</button>
+                            </>
+                          )}
                         </div>
                       </td>
                     )}
