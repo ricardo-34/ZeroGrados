@@ -11,7 +11,7 @@ export function getSocket() {
     socketSingleton = io(URL, {
       auth: { token },
       autoConnect: true,
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       extraHeaders: { 'ngrok-skip-browser-warning': 'true' },
     });
   }
