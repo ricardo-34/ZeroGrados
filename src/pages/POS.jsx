@@ -298,11 +298,23 @@ export default function POS() {
 
 function FacturaModal({ venta, onClose }) {
   const [config, setConfig] = useState(null);
+  // Ancho del papel térmico: '58mm' o '80mm'. Cámbialo según tu impresora.
+  const [ancho, setAncho] = useState(
+    () => localStorage.getItem('ticket_ancho') || '80mm'
+  );
+
   useEffect(() => {
     api.get('/config').then((r) => setConfig(r.data.item)).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('ticket_ancho', ancho);
+  }, [ancho]);
+
   const imprimir = () => window.print();
+
+  const pad = (t, n) => String(t).padEnd(n).slice(0, n);
+  const padR = (t, n) => String(t).padStart(n).slice(-n);
 
   return (
     <Modal
@@ -310,6 +322,16 @@ function FacturaModal({ venta, onClose }) {
       onClose={onClose}
       footer={
         <>
+          <select
+            className="select"
+            value={ancho}
+            onChange={(e) => setAncho(e.target.value)}
+            style={{ maxWidth: 110 }}
+            title="Ancho del rollo"
+          >
+            <option value="58mm">58 mm</option>
+            <option value="80mm">80 mm</option>
+          </select>
           <button className="btn btn-outline" onClick={onClose}>
             Cerrar
           </button>
@@ -319,56 +341,117 @@ function FacturaModal({ venta, onClose }) {
         </>
       }
     >
-      <div id="factura-print" style={{ fontSize: 14 }}>
-        <div style={{ textAlign: 'center', marginBottom: 10 }}>
-          <strong style={{ fontSize: 18 }}>{config?.nombreComercial || 'Zero Grados'}</strong>
-          <div className="text-muted" style={{ fontSize: 12 }}>
-            {config?.nit && <>NIT: {config.nit}<br /></>}
-            {config?.direccion}<br />
-            {config?.telefono}
+      {/* Vista previa en pantalla del ticket */}
+      <div id="ticket" className="ticket">
+        <div className="t-center">
+          {config?.logoUrl ? (
+            <img src={config.logoUrl} alt="logo" className="t-logo" />
+          ) : null}
+          <div className="t-title">{config?.nombreComercial || 'Zero Grados'}</div>
+          {config?.nit ? <div>NIT: {config.nit}</div> : null}
+          {config?.direccion ? <div>{config.direccion}</div> : null}
+          {config?.telefono ? <div>Tel: {config.telefono}</div> : null}
+        </div>
+
+        <div className="t-sep" />
+
+        <div>Factura #: {venta.numero}</div>
+        <div>{new Date(venta.createdAt).toLocaleString('es-CO')}</div>
+        <div>Cajero: {venta.usuario?.nombre || '-'}</div>
+        <div>Pago: {venta.metodoPago}</div>
+
+        <div className="t-sep" />
+
+        {/* Cabecera de columnas */}
+        <div className="t-row t-head">
+          <span className="t-col-desc">{pad('Producto', 16)}</span>
+          <span className="t-col-cant">Cant</span>
+          <span className="t-col-tot">Total</span>
+        </div>
+
+        {venta.detalle.map((d, i) => (
+          <div className="t-item" key={i}>
+            <div className="t-item-name">{d.nombre}</div>
+            <div className="t-row">
+              <span className="t-col-desc">
+                {padR(d.cantidad, 3)} x {money(d.precioUnitario)}
+              </span>
+              <span className="t-col-tot">
+                {money(d.precioUnitario * d.cantidad)}
+              </span>
+            </div>
           </div>
+        ))}
+
+        <div className="t-sep" />
+
+        <div className="t-row">
+          <span>Subtotal</span>
+          <span>{money(venta.subtotal)}</span>
         </div>
-        <div className="text-muted" style={{ fontSize: 12 }}>
-          Factura #{venta.numero} · {new Date(venta.createdAt).toLocaleString('es-CO')}
+        <div className="t-row">
+          <span>IVA</span>
+          <span>{money(venta.iva)}</span>
         </div>
-        <div className="text-muted" style={{ fontSize: 12, marginBottom: 8 }}>
-          Cajero: {venta.usuario?.nombre} · Pago: {venta.metodoPago}
+        <div className="t-row">
+          <span>Descuento</span>
+          <span>-{money(venta.descuento)}</span>
         </div>
-        <table className="tbl" style={{ marginBottom: 8 }}>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th className="text-right">Cant</th>
-              <th className="text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {venta.detalle.map((d, i) => (
-              <tr key={i}>
-                <td>{d.nombre}</td>
-                <td className="text-right">{d.cantidad}</td>
-                <td className="text-right">{money(d.precioUnitario * d.cantidad)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="flex-between"><span>Subtotal</span><span>{money(venta.subtotal)}</span></div>
-        <div className="flex-between"><span>IVA</span><span>{money(venta.iva)}</span></div>
-        <div className="flex-between"><span>Descuento</span><span>−{money(venta.descuento)}</span></div>
-        <div className="flex-between" style={{ marginTop: 6, fontSize: 16 }}>
-          <strong>TOTAL</strong>
-          <strong>{money(venta.total)}</strong>
+        <div className="t-row t-total">
+          <span>TOTAL</span>
+          <span>{money(venta.total)}</span>
         </div>
-        <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12 }} className="text-muted">
-          ¡Gracias por su compra!
+
+        <div className="t-sep" />
+        <div className="t-center t-thanks">
+          Gracias por su compra
         </div>
+        <div className="t-feed" />
       </div>
 
       <style>{`
+        /* --- Vista previa en pantalla --- */
+        .ticket {
+          width: ${ancho === '58mm' ? '58mm' : '80mm'};
+          margin: 0 auto;
+          padding: 4px 6px;
+          background: #fff;
+          color: #000;
+          font-family: 'Courier New', ui-monospace, monospace;
+          font-size: 12px;
+          line-height: 1.35;
+        }
+        .t-title { font-size: 15px; font-weight: 700; }
+        .t-center { text-align: center; }
+        .t-logo { max-width: 60%; max-height: 60px; margin: 0 auto 4px; display: block; }
+        .t-sep {
+          border-top: 1px dashed #000;
+          margin: 6px 0;
+        }
+        .t-row { display: flex; justify-content: space-between; gap: 6px; }
+        .t-head { font-weight: 700; }
+        .t-item { margin-bottom: 3px; }
+        .t-item-name { font-weight: 600; }
+        .t-total { font-weight: 700; font-size: 14px; }
+        .t-thanks { margin-top: 6px; }
+        .t-feed { height: 24px; }  /* espacio para el corte de papel */
+
+        /* --- Al imprimir: solo el ticket, sin margenes del navegador --- */
         @media print {
+          @page {
+            size: ${ancho === '58mm' ? '58mm' : '80mm'} auto;
+            margin: 0;
+          }
           body * { visibility: hidden; }
-          #factura-print, #factura-print * { visibility: visible; }
-          #factura-print { position: absolute; left: 0; top: 0; width: 100%; }
+          #ticket, #ticket * { visibility: visible; }
+          #ticket {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: ${ancho === '58mm' ? '58mm' : '80mm'};
+            margin: 0;
+            padding: 0 2mm;
+          }
         }
       `}</style>
     </Modal>
