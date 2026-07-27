@@ -4,19 +4,20 @@ import api from '../api/client.js';
 import { useSocketEvent } from '../hooks/useSocket.js';
 import { money, fecha, haceMinutos } from '../utils/format.js';
 import { Alert, Badge, Empty } from '../components/UI.jsx';
-import { FacturaModal, TicketPedidoModal } from '../components/TicketTermico.jsx';
+import { TicketPedidoModal } from '../components/TicketTermico.jsx';
 
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
-  const [ventaImprimir, setVentaImprimir] = useState(null); // factura tras cobrar
-  const [pedidoImprimir, setPedidoImprimir] = useState(null); // pre-cuenta del pedido
+  const [filtro, setFiltro] = useState('todos'); // todos | activos | facturados
+  const [pedidoImprimir, setPedidoImprimir] = useState(null);
   const navigate = useNavigate();
 
+  // Trae TODOS los pedidos (historial completo). No se filtran en el backend.
   const cargar = async () => {
     try {
-      const res = await api.get('/pedidos?activos=true');
+      const res = await api.get('/pedidos');
       setPedidos(res.data.items);
     } catch (err) {
       setError(err.message);
@@ -27,64 +28,65 @@ export default function Pedidos() {
     cargar();
   }, []);
 
-  useSocketEvent('pedido:nuevo', (p) => setPedidos((prev) => [p, ...prev]));
-  useSocketEvent('pedido:actualizado', (p) => {
-    setPedidos((prev) => {
-      const activo = ['pendiente', 'preparando', 'listo'].includes(p.estado);
-      if (!activo) return prev.filter((x) => x._id !== p._id);
-      return prev.some((x) => x._id === p._id)
+  // En este historial los pedidos NUNCA se quitan: al llegar un cambio,
+  // se actualiza el que ya existe o se agrega si es nuevo, pero no se elimina.
+  const upsert = (p) => {
+    setPedidos((prev) =>
+      prev.some((x) => x._id === p._id)
         ? prev.map((x) => (x._id === p._id ? p : x))
-        : [p, ...prev];
-    });
-  });
+        : [p, ...prev]
+    );
+  };
+  useSocketEvent('pedido:nuevo', upsert);
+  useSocketEvent('pedido:actualizado', upsert);
   useSocketEvent('pedido:listo', (p) => {
+    upsert(p);
     setAviso(`🔔 Pedido #${p.numero} (${p.mesa || 'sin mesa'}) está LISTO`);
     reproducirAlerta();
   });
 
-  // Cobra el pedido: crea la venta desde el pedido y abre la factura térmica.
-  const facturar = async (pedido) => {
-    setError('');
-    try {
-      const res = await api.post('/ventas', {
-        detalle: pedido.detalle.map((d) => ({ producto: d.producto, cantidad: d.cantidad })),
-        metodoPago: 'efectivo',
-        pedidoId: pedido._id,
-      });
-      setAviso(`Pedido #${pedido.numero} facturado`);
-      // Abrir la factura para imprimir en la impresora térmica
-      setVentaImprimir(res.data.item);
-      cargar();
-    } catch (err) {
-      setError(err.message + ' — puedes cobrarlo manualmente en el POS.');
-    }
-  };
-
   const totalPedido = (p) => p.detalle.reduce((s, d) => s + (d.precioUnitario || 0) * d.cantidad, 0);
+
+  const activos = (p) => ['pendiente', 'preparando', 'listo'].includes(p.estado);
+  const visibles = pedidos.filter((p) => {
+    if (filtro === 'activos') return activos(p);
+    if (filtro === 'facturados') return p.facturado;
+    return true; // todos
+  });
 
   return (
     <div>
       <div className="flex-between mb">
         <h1>Pedidos</h1>
-        <button className="btn btn-outline btn-sm" onClick={() => navigate('/pos')}>
-          Ir al POS
-        </button>
+        <div className="flex items-center gap-sm">
+          <select className="select" style={{ maxWidth: 170 }} value={filtro} onChange={(e) => setFiltro(e.target.value)}>
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="facturados">Facturados</option>
+          </select>
+          <button className="btn btn-outline btn-sm" onClick={() => navigate('/pos')}>
+            Ir al POS
+          </button>
+        </div>
       </div>
       <Alert type="error">{error}</Alert>
       <Alert type="success">{aviso}</Alert>
 
-      {pedidos.length === 0 ? (
-        <Empty text="No hay pedidos activos." />
+      {visibles.length === 0 ? (
+        <Empty text="No hay pedidos para mostrar." />
       ) : (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-          {pedidos.map((p) => (
+          {visibles.map((p) => (
             <div key={p._id} className="card">
               <div className="flex-between mb">
                 <strong style={{ fontSize: 18 }}>#{p.numero}</strong>
-                <Badge estado={p.estado} />
+                <div className="flex items-center gap-sm">
+                  {p.facturado && <span className="text-muted" style={{ fontSize: 12 }}>✔ Cobrado</span>}
+                  <Badge estado={p.estado} />
+                </div>
               </div>
               <div className="text-muted mb" style={{ fontSize: 13 }}>
-                {p.mesa || 'Sin mesa'} · {p.mesero?.nombre} · {haceMinutos(p.createdAt)} min
+                {p.mesa || 'Sin mesa'} · {p.mesero?.nombre} · {fecha(p.createdAt)}
               </div>
               <div style={{ marginBottom: 10 }}>
                 {p.detalle.map((d, i) => (
@@ -99,30 +101,17 @@ export default function Pedidos() {
                 <strong style={{ color: 'var(--verde-esmeralda)' }}>{money(totalPedido(p))}</strong>
               </div>
 
-              {/* Imprimir la comanda/pre-cuenta del pedido (sin cobrar aún) */}
               <button
                 className="btn btn-outline btn-block mt"
                 onClick={() => setPedidoImprimir(p)}
               >
                 Imprimir pedido
               </button>
-
-              {p.estado === 'listo' && (
-                <button className="btn btn-primary btn-block mt" onClick={() => facturar(p)}>
-                  Cobrar y facturar
-                </button>
-              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Factura térmica tras cobrar (igual que en el POS) */}
-      {ventaImprimir && (
-        <FacturaModal venta={ventaImprimir} onClose={() => setVentaImprimir(null)} />
-      )}
-
-      {/* Pre-cuenta / comanda del pedido antes de cobrar */}
       {pedidoImprimir && (
         <TicketPedidoModal pedido={pedidoImprimir} onClose={() => setPedidoImprimir(null)} />
       )}

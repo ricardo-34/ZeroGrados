@@ -3,6 +3,7 @@ import api from '../api/client.js';
 import { money, fecha, haceMinutos } from '../utils/format.js';
 import { useSocketEvent } from '../hooks/useSocket.js';
 import { Alert, Field, Badge, Empty } from '../components/UI.jsx';
+import { FacturaModal } from '../components/TicketTermico.jsx';
 
 export default function Caja() {
   const [caja, setCaja] = useState(null);
@@ -13,6 +14,7 @@ export default function Caja() {
   const [montoApertura, setMontoApertura] = useState('');
   const [montoContado, setMontoContado] = useState('');
   const [mov, setMov] = useState({ tipo: 'ingreso', monto: '', concepto: '' });
+  const [ventaImprimir, setVentaImprimir] = useState(null);
   const [cobrandoId, setCobrandoId] = useState(null);
   const [metodoPorPedido, setMetodoPorPedido] = useState({});
 
@@ -109,6 +111,8 @@ export default function Caja() {
         pedidoId: pedido._id,
       });
       setOk(`Pedido #${pedido.numero} cobrado · Venta #${res.data.item.numero} registrada`);
+      // Abrir la factura para imprimir en la impresora térmica.
+      setVentaImprimir(res.data.item);
       // Quitar de la lista de inmediato (además del evento de socket).
       setPedidos((prev) => prev.filter((x) => x._id !== pedido._id));
       cargar();
@@ -320,6 +324,10 @@ export default function Caja() {
           </div>
         )}
       </div>
+
+      {ventaImprimir && (
+        <FacturaModal venta={ventaImprimir} onClose={() => setVentaImprimir(null)} />
+      )}
     </div>
   );
 }
