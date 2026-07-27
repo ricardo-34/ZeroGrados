@@ -4,11 +4,14 @@ import api from '../api/client.js';
 import { useSocketEvent } from '../hooks/useSocket.js';
 import { money, fecha, haceMinutos } from '../utils/format.js';
 import { Alert, Badge, Empty } from '../components/UI.jsx';
+import { FacturaModal, TicketPedidoModal } from '../components/TicketTermico.jsx';
 
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
+  const [ventaImprimir, setVentaImprimir] = useState(null); // factura tras cobrar
+  const [pedidoImprimir, setPedidoImprimir] = useState(null); // pre-cuenta del pedido
   const navigate = useNavigate();
 
   const cargar = async () => {
@@ -39,17 +42,18 @@ export default function Pedidos() {
     reproducirAlerta();
   });
 
-  // Cobra el pedido: lleva su detalle al POS pre-cargado sería ideal;
-  // aquí facturamos directamente creando la venta desde el pedido.
+  // Cobra el pedido: crea la venta desde el pedido y abre la factura térmica.
   const facturar = async (pedido) => {
     setError('');
     try {
-      await api.post('/ventas', {
+      const res = await api.post('/ventas', {
         detalle: pedido.detalle.map((d) => ({ producto: d.producto, cantidad: d.cantidad })),
         metodoPago: 'efectivo',
         pedidoId: pedido._id,
       });
       setAviso(`Pedido #${pedido.numero} facturado`);
+      // Abrir la factura para imprimir en la impresora térmica
+      setVentaImprimir(res.data.item);
       cargar();
     } catch (err) {
       setError(err.message + ' — puedes cobrarlo manualmente en el POS.');
@@ -94,6 +98,15 @@ export default function Pedidos() {
                 <strong>Total</strong>
                 <strong style={{ color: 'var(--verde-esmeralda)' }}>{money(totalPedido(p))}</strong>
               </div>
+
+              {/* Imprimir la comanda/pre-cuenta del pedido (sin cobrar aún) */}
+              <button
+                className="btn btn-outline btn-block mt"
+                onClick={() => setPedidoImprimir(p)}
+              >
+                Imprimir pedido
+              </button>
+
               {p.estado === 'listo' && (
                 <button className="btn btn-primary btn-block mt" onClick={() => facturar(p)}>
                   Cobrar y facturar
@@ -102,6 +115,16 @@ export default function Pedidos() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Factura térmica tras cobrar (igual que en el POS) */}
+      {ventaImprimir && (
+        <FacturaModal venta={ventaImprimir} onClose={() => setVentaImprimir(null)} />
+      )}
+
+      {/* Pre-cuenta / comanda del pedido antes de cobrar */}
+      {pedidoImprimir && (
+        <TicketPedidoModal pedido={pedidoImprimir} onClose={() => setPedidoImprimir(null)} />
       )}
     </div>
   );
