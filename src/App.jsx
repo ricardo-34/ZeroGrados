@@ -30,7 +30,7 @@ const INICIO = {
   cajero: '/pos',
   mesero: '/mesero',
   cocina: '/cocina',
-   juegos: '/juegos',
+  juegos: '/juegos',
 };
 
 function Protegido({ roles, children }) {
@@ -65,7 +65,6 @@ export default function App() {
         <Route path="/dashboard" element={<Protegido roles={['admin']}><Dashboard /></Protegido>} />
         <Route path="/pos" element={<Protegido roles={['admin', 'cajero']}><POS /></Protegido>} />
         <Route path="/caja" element={<Protegido roles={['admin', 'cajero']}><Caja /></Protegido>} />
-        <Route path="/juegos" element={<Protegido roles={['admin', 'cajero']}><Juegos /></Protegido>} />
         <Route path="/pedidos" element={<Protegido roles={['admin', 'cajero']}><Pedidos /></Protegido>} />
         <Route path="/mesero" element={<Protegido roles={['admin', 'mesero']}><Mesero /></Protegido>} />
         <Route path="/mesas" element={<Protegido roles={['admin']}><Mesas /></Protegido>} />
@@ -80,7 +79,7 @@ export default function App() {
         <Route path="/usuarios" element={<Protegido roles={['admin']}><Usuarios /></Protegido>} />
         <Route path="/configuracion" element={<Protegido roles={['admin']}><Configuracion /></Protegido>} />
         <Route path="/juegos" element={<Protegido roles={['admin', 'cajero', 'juegos']}><Juegos /></Protegido>} />
-<Route path="/juegos-registro" element={<Protegido roles={['admin', 'cajero', 'juegos']}><JuegosRegistro /></Protegido>} />F
+        <Route path="/juegos-registro" element={<Protegido roles={['admin', 'cajero', 'juegos']}><JuegosRegistro /></Protegido>} />F
       </Route>
 
       {/* Cualquier ruta desconocida: al panel si hay sesión, o a la landing. */}
