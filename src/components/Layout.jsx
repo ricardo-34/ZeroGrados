@@ -8,6 +8,7 @@ const MENU = [
   { to: '/dashboard', label: 'Dashboard', roles: ['admin'] },
   { to: '/pos', label: 'Punto de Venta', roles: ['admin', 'cajero'] },
   { to: '/caja', label: 'Caja', roles: ['admin', 'cajero'] },
+  { to: '/juegos', label: 'Juegos', roles: ['admin', 'cajero'] },
   { to: '/pedidos', label: 'Pedidos', roles: ['admin', 'cajero'] },
   { to: '/mesero', label: 'Tomar Pedido', roles: ['admin', 'mesero'] },
   { to: '/mesas', label: 'Mesas', roles: ['admin'] },

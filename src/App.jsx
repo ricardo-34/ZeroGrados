@@ -21,6 +21,7 @@ import Reportes from './pages/Reportes.jsx';
 import Contabilidad from './pages/Contabilidad.jsx';
 import Usuarios from './pages/Usuarios.jsx';
 import Configuracion from './pages/Configuracion.jsx';
+import Juegos from './pages/Juegos.jsx';
 
 // Ruta de inicio según rol
 const INICIO = {
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="/dashboard" element={<Protegido roles={['admin']}><Dashboard /></Protegido>} />
         <Route path="/pos" element={<Protegido roles={['admin', 'cajero']}><POS /></Protegido>} />
         <Route path="/caja" element={<Protegido roles={['admin', 'cajero']}><Caja /></Protegido>} />
+        <Route path="/juegos" element={<Protegido roles={['admin', 'cajero']}><Juegos /></Protegido>} />
         <Route path="/pedidos" element={<Protegido roles={['admin', 'cajero']}><Pedidos /></Protegido>} />
         <Route path="/mesero" element={<Protegido roles={['admin', 'mesero']}><Mesero /></Protegido>} />
         <Route path="/mesas" element={<Protegido roles={['admin']}><Mesas /></Protegido>} />
