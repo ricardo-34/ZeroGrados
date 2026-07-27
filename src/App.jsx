@@ -22,6 +22,7 @@ import Contabilidad from './pages/Contabilidad.jsx';
 import Usuarios from './pages/Usuarios.jsx';
 import Configuracion from './pages/Configuracion.jsx';
 import Juegos from './pages/Juegos.jsx';
+import JuegosRegistro from './pages/JuegosRegistro.jsx';
 
 // Ruta de inicio según rol
 const INICIO = {
@@ -29,6 +30,7 @@ const INICIO = {
   cajero: '/pos',
   mesero: '/mesero',
   cocina: '/cocina',
+   juegos: '/juegos',
 };
 
 function Protegido({ roles, children }) {
@@ -77,6 +79,8 @@ export default function App() {
         <Route path="/contabilidad" element={<Protegido roles={['admin']}><Contabilidad /></Protegido>} />
         <Route path="/usuarios" element={<Protegido roles={['admin']}><Usuarios /></Protegido>} />
         <Route path="/configuracion" element={<Protegido roles={['admin']}><Configuracion /></Protegido>} />
+        <Route path="/juegos" element={<Protegido roles={['admin', 'cajero', 'juegos']}><Juegos /></Protegido>} />
+<Route path="/juegos-registro" element={<Protegido roles={['admin', 'cajero', 'juegos']}><JuegosRegistro /></Protegido>} />F
       </Route>
 
       {/* Cualquier ruta desconocida: al panel si hay sesión, o a la landing. */}
