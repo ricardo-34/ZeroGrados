@@ -78,8 +78,8 @@ export default function App() {
         <Route path="/contabilidad" element={<Protegido roles={['admin']}><Contabilidad /></Protegido>} />
         <Route path="/usuarios" element={<Protegido roles={['admin']}><Usuarios /></Protegido>} />
         <Route path="/configuracion" element={<Protegido roles={['admin']}><Configuracion /></Protegido>} />
-        <Route path="/juegos" element={<Protegido roles={['admin', 'cajero', 'juegos']}><Juegos /></Protegido>} />
-        <Route path="/juegos-registro" element={<Protegido roles={['admin', 'cajero', 'juegos']}><JuegosRegistro /></Protegido>} />F
+        <Route path="/juegos" element={<Protegido roles={['admin', 'juegos']}><Juegos /></Protegido>} />
+        <Route path="/juegos-registro" element={<Protegido roles={['admin', 'juegos']}><JuegosRegistro /></Protegido>} />
       </Route>
 
       {/* Cualquier ruta desconocida: al panel si hay sesión, o a la landing. */}
