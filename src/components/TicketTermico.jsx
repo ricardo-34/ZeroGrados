@@ -4,8 +4,13 @@ import { money } from '../utils/format.js';
 import { Modal } from './UI.jsx';
 
 // Estilos compartidos del ticket térmico (58mm / 80mm).
-function estilosTicket(ancho) {
+// pt = tamaño de fuente base en puntos (9 a 11). El título y el total
+// escalan proporcionalmente a partir de ese valor.
+function estilosTicket(ancho, pt = 10) {
   const w = ancho === '58mm' ? '58mm' : '80mm';
+  const base = Math.min(11, Math.max(9, Number(pt) || 10)); // acota 9–11
+  const titulo = (base + 3).toFixed(0); // título un poco mayor
+  const total = (base + 2).toFixed(0);  // total resaltado
   return `
     .ticket {
       width: ${w};
@@ -13,18 +18,18 @@ function estilosTicket(ancho) {
       padding: 4px 6px;
       background: #fff;
       color: #000;
-      font-family: 'Courier New', ui-monospace, monospace;
-      font-size: 12px;
-      line-height: 1.35;
+      font-family: Consolas, 'Courier New', ui-monospace, monospace;
+      font-size: ${base}pt;
+      line-height: 1.3;
     }
-    .t-title { font-size: 15px; font-weight: 700; }
+    .t-title { font-size: ${titulo}pt; font-weight: 700; }
     .t-center { text-align: center; }
     .t-logo { max-width: 60%; max-height: 60px; margin: 0 auto 4px; display: block; }
     .t-sep { border-top: 1px dashed #000; margin: 6px 0; }
     .t-row { display: flex; justify-content: space-between; gap: 6px; }
     .t-item { margin-bottom: 3px; }
     .t-item-name { font-weight: 600; }
-    .t-total { font-weight: 700; font-size: 14px; }
+    .t-total { font-weight: 700; font-size: ${total}pt; }
     .t-thanks { margin-top: 6px; }
     .t-feed { height: 24px; }
     @media print {
@@ -60,7 +65,9 @@ function Encabezado({ config }) {
 export function FacturaModal({ venta, onClose }) {
   const config = useConfig();
   const [ancho, setAncho] = useState(() => localStorage.getItem('ticket_ancho') || '80mm');
+  const [pt, setPt] = useState(() => Number(localStorage.getItem('ticket_pt')) || 10);
   useEffect(() => { localStorage.setItem('ticket_ancho', ancho); }, [ancho]);
+  useEffect(() => { localStorage.setItem('ticket_pt', pt); }, [pt]);
   const imprimir = () => window.print();
 
   return (
@@ -69,9 +76,14 @@ export function FacturaModal({ venta, onClose }) {
       onClose={onClose}
       footer={
         <>
-          <select className="select" value={ancho} onChange={(e) => setAncho(e.target.value)} style={{ maxWidth: 110 }}>
+          <select className="select" value={ancho} onChange={(e) => setAncho(e.target.value)} style={{ maxWidth: 100 }}>
             <option value="58mm">58 mm</option>
             <option value="80mm">80 mm</option>
+          </select>
+          <select className="select" value={pt} onChange={(e) => setPt(Number(e.target.value))} style={{ maxWidth: 90 }} title="Tamaño de letra">
+            <option value={9}>9 pt</option>
+            <option value={10}>10 pt</option>
+            <option value={11}>11 pt</option>
           </select>
           <button className="btn btn-outline" onClick={onClose}>Cerrar</button>
           <button className="btn btn-primary" onClick={imprimir}>Imprimir</button>
@@ -104,7 +116,7 @@ export function FacturaModal({ venta, onClose }) {
         <div className="t-center t-thanks">Gracias por su compra</div>
         <div className="t-feed" />
       </div>
-      <style>{estilosTicket(ancho)}</style>
+      <style>{estilosTicket(ancho, pt)}</style>
     </Modal>
   );
 }
@@ -113,7 +125,9 @@ export function FacturaModal({ venta, onClose }) {
 export function TicketPedidoModal({ pedido, onClose }) {
   const config = useConfig();
   const [ancho, setAncho] = useState(() => localStorage.getItem('ticket_ancho') || '80mm');
+  const [pt, setPt] = useState(() => Number(localStorage.getItem('ticket_pt')) || 10);
   useEffect(() => { localStorage.setItem('ticket_ancho', ancho); }, [ancho]);
+  useEffect(() => { localStorage.setItem('ticket_pt', pt); }, [pt]);
   const imprimir = () => window.print();
 
   const total = pedido.detalle.reduce((s, d) => s + (d.precioUnitario || 0) * d.cantidad, 0);
@@ -124,9 +138,14 @@ export function TicketPedidoModal({ pedido, onClose }) {
       onClose={onClose}
       footer={
         <>
-          <select className="select" value={ancho} onChange={(e) => setAncho(e.target.value)} style={{ maxWidth: 110 }}>
+          <select className="select" value={ancho} onChange={(e) => setAncho(e.target.value)} style={{ maxWidth: 100 }}>
             <option value="58mm">58 mm</option>
             <option value="80mm">80 mm</option>
+          </select>
+          <select className="select" value={pt} onChange={(e) => setPt(Number(e.target.value))} style={{ maxWidth: 90 }} title="Tamaño de letra">
+            <option value={9}>9 pt</option>
+            <option value={10}>10 pt</option>
+            <option value={11}>11 pt</option>
           </select>
           <button className="btn btn-outline" onClick={onClose}>Cerrar</button>
           <button className="btn btn-primary" onClick={imprimir}>Imprimir</button>
@@ -159,7 +178,7 @@ export function TicketPedidoModal({ pedido, onClose }) {
         </div>
         <div className="t-feed" />
       </div>
-      <style>{estilosTicket(ancho)}</style>
+      <style>{estilosTicket(ancho, pt)}</style>
     </Modal>
   );
 }
