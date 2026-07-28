@@ -1,330 +1,406 @@
-import { useEffect, useRef, useLayoutEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from '@studio-freight/lenis';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/landing.css';
 
-gsap.registerPlugin(ScrollTrigger);
-
-/* ================= DATOS REALES DE LA MARCA ================= */
-// Reemplaza los `img` por tus fotos oficiales cuando las tengas.
+/* ================= DATOS DE LA MARCA ================= */
 const PREMIUM = [
-  { n: 'Copa Don Efra', s: 'Banana split tradicional', d: 'Dos bolas de helado, banano fresco, crema batida, salsa de chocolate, barquillos y cereza.', p: '$16.000', img: 'https://images.unsplash.com/photo-1590080876351-8a5f7d8c1f5e?w=600&q=80' },
-  { n: 'Tentación de Lulo', s: 'Crema con lulo', d: 'Cremoso helado de vainilla bañado en dulce artesanal de lulo nariñense y crema chantilly.', p: '$10.500', img: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80' },
-  { n: 'Delicia del Bosque', s: 'Crema con cerezas', d: 'Helado de chocolate o vainilla, reducción de cerezas rojas y virutas de chocolate negro.', p: '$11.000', img: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=600&q=80' },
-  { n: 'Clásica Primavera', s: 'Crema con fresas', d: 'Láminas de fresa de la región, helado de la casa, leche condensada y chantilly.', p: '$10.000', img: 'https://images.unsplash.com/photo-1488900128323-21503983a07e?w=600&q=80' },
+  { name: 'Copa Don Efra', sub: 'Banana Split Tradicional', price: '$16.000', img: '/assets/premium1.png', desc: 'Dos bolas de helado, banano fresco, crema batida, salsa de chocolate, barquillos crujientes y una cereza.' },
+  { name: 'Tentación de Lulo', sub: 'Crema con Lulo', price: '$10.500', img: '/assets/premium2.png', desc: 'Cremoso helado de vainilla bañado en un dulce artesanal de lulo nariñense y un toque de crema chantilly.' },
+  { name: 'Delicia del Bosque', sub: 'Crema con Cerezas', price: '$11.000', img: '/assets/premium3.png', desc: 'Helado de chocolate o vainilla, reducción en almíbar de cerezas rojas y finas virutas de chocolate negro.' },
+  { name: 'Clásica Primavera', sub: 'Crema con Fresas', price: '$10.000', img: '/assets/premium4.png', desc: 'Láminas de fresas selectas de la región, helado de la casa, abundante leche condensada y crema chantilly.' },
 ];
 
 const GRANIZADOS = [
-  { n: 'Campestre de Maracuyá', d: 'Sabor tropical intenso, dulce y refrescante.', img: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=500&q=80', c: '#f5b301' },
-  { n: 'Glacial de Limón Mandarina', d: 'Balance perfecto de acidez con cítricos de Linares.', img: 'https://images.unsplash.com/photo-1523371683702-e9a3a6d29d5c?w=500&q=80', c: '#7ad13a' },
-  { n: 'Volcánico de Frutos Rojos', d: 'Fresa, mora y arándanos silvestres.', img: 'https://images.unsplash.com/photo-1560008581-09826d1de69e?w=500&q=80', c: '#d7263d' },
-  { n: 'Oasis de Mango Biche', d: 'El clásico playero: sal, limón y pimienta.', img: 'https://images.unsplash.com/photo-1502741224143-90386d7f8c82?w=500&q=80', c: '#f5b301' },
+  { name: 'Campestre de Maracuyá', img: '/assets/gran1.png', desc: 'Sabor tropical intenso, dulce y refrescante.' },
+  { name: 'Glacial de Limón Mandarina', img: '/assets/gran2.png', desc: 'El balance perfecto de acidez con cítricos locales de Linares.' },
+  { name: 'Volcánico de Frutos Rojos', img: '/assets/gran3.png', desc: 'Una deliciosa combinación de fresa, mora y arándanos silvestres.' },
+  { name: 'Oasis de Mango Biche', img: '/assets/gran4.png', desc: 'El clásico playero llevado al campo: con sal, limón y pimienta.' },
 ];
 
 const OFERTA = [
-  { t: 'Helados premium', d: 'Con la calidad de Helados Colombina.', e: '🍨' },
-  { t: 'Granizados 100% naturales', d: 'Fruta real, hechos al momento en máquina.', e: '🧊' },
-  { t: 'Gomas enchiladas', d: 'Gomitas marinadas en chamoy y polvo picante.', e: '🌶️' },
-  { t: 'Granizados con alcohol', d: 'La versión adulta de tu pausa fresca.', e: '🍹' },
+  { num: '01', cls: 'r1', img: '/assets/premium1.png', alt: 'Helado', title: 'Helado', text: 'Copas de la casa con la calidad de Helados Colombina.', numColor: '#BFF3F5', titleColor: '#FFF9EC', textColor: 'rgba(255,249,236,.72)' },
+  { num: '02', cls: 'r2', img: '/assets/gran2.png', alt: 'Granizados', title: 'Granizados', text: 'Fruta 100% natural directo de nuestra máquina.', numColor: '#062F2D', titleColor: '#062F2D', textColor: 'rgba(6,47,45,.75)' },
+  { num: '03', cls: 'r3', img: '/assets/ench2.png', alt: 'Gomas enchiladas', title: 'Gomas enchiladas', text: 'Chamoy artesanal, limón y lluvia de polvo picante.', numColor: '#FFD52E', titleColor: '#FFF9EC', textColor: 'rgba(255,249,236,.8)' },
+  { num: '04', cls: 'r4', img: '/assets/gran3.png', alt: 'Granizados con alcohol', title: 'Coctelería glacial', text: 'Granizados con alcohol para brindar bajo cero. +18', numColor: '#0E8C86', titleColor: '#0B4F4C', textColor: 'rgba(11,79,76,.75)' },
 ];
 
-export default function Landing() {
-  const navigate = useNavigate();
-  const root = useRef(null);
-  const heroScoops = useRef([]);
-  heroScoops.current = [];
-  const addScoop = (el) => el && !heroScoops.current.includes(el) && heroScoops.current.push(el);
+const TICKER_TEXT = 'Tu pausa fresca en Restaurantes Don Efra';
+const PROMO_PERCENT = 10;
 
-  /* ---- Lenis smooth scroll ---- */
+/* Hook: revela un elemento cuando entra al viewport */
+function useReveal() {
+  const ref = useRef(null);
   useEffect(() => {
-    const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
-    lenis.on('scroll', ScrollTrigger.update);
-    const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
-    const id = requestAnimationFrame(raf);
-    return () => { cancelAnimationFrame(id); lenis.destroy(); };
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { el.classList.add('in'); io.unobserve(el); } },
+      { threshold: 0.15 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return ref;
+}
+
+function Reveal({ as: Tag = 'div', className = '', children, ...rest }) {
+  const ref = useReveal();
+  return (
+    <Tag ref={ref} className={`zg-reveal ${className}`} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+export default function Landing() {
+  const [scrollP, setScrollP] = useState(0);
+  const [mouse, setMouse] = useState({ x: -400, y: -400 });
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - window.innerHeight;
+      setScrollP(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0);
+      setScrolled(window.scrollY > 24); // <-- nuevo: umbral de "empezó a hacer scroll"
+    };
+    const onMove = (e) => setMouse({ x: e.clientX, y: e.clientY });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('mousemove', onMove, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('mousemove', onMove);
+    };
   }, []);
 
-  /* ---- GSAP animations ---- */
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      // Hero: entrada escalonada
-      gsap.from('.hero-line', { yPercent: 120, opacity: 0, duration: 1, stagger: 0.12, ease: 'power4.out', delay: 0.2 });
-      gsap.from('.hero-sub, .hero-cta, .hero-badges', { y: 30, opacity: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out', delay: 0.7 });
-
-      // Scoops flotantes (parallax + float)
-      heroScoops.current.forEach((el, i) => {
-        gsap.to(el, { y: '+=22', duration: 2 + i * 0.4, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: i * 0.2 });
-        gsap.to(el, {
-          yPercent: -30 - i * 15, ease: 'none',
-          scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
-        });
-      });
-
-      // Marquee sync ya es CSS; blobs parallax
-      gsap.utils.toArray('.blob').forEach((b, i) => {
-        gsap.to(b, { yPercent: (i % 2 ? -18 : 18), ease: 'none',
-          scrollTrigger: { trigger: b.closest('section'), start: 'top bottom', end: 'bottom top', scrub: true } });
-      });
-
-      // Reveal genérico de secciones
-      gsap.utils.toArray('.reveal').forEach((el) => {
-        gsap.from(el, {
-          y: 60, opacity: 0, duration: 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 82%' },
-        });
-      });
-
-      // Tarjetas premium: aparecen en cascada
-      gsap.from('.pcard', {
-        y: 80, opacity: 0, rotateZ: 2, duration: 0.8, stagger: 0.12, ease: 'back.out(1.4)',
-        scrollTrigger: { trigger: '.premium-grid', start: 'top 80%' },
-      });
-
-      // Franja "se ofrece": pin + horizontal reveal en desktop
-      gsap.from('.oferta-item', {
-        scale: 0.85, opacity: 0, duration: 0.6, stagger: 0.12, ease: 'back.out(1.6)',
-        scrollTrigger: { trigger: '.oferta', start: 'top 78%' },
-      });
-
-      // Título grande con contador de temperatura
-      gsap.fromTo('.temp-count', { innerText: 30 }, {
-        innerText: 0, duration: 2, ease: 'power2.out', snap: { innerText: 1 },
-        scrollTrigger: { trigger: '.temp-band', start: 'top 70%' },
-        onUpdate() { const t = this.targets()[0]; t.innerText = Math.round(t.innerText); },
-      });
-
-      // Granizados: parallax sutil por columna
-      gsap.utils.toArray('.gcard').forEach((el, i) => {
-        gsap.to(el, { y: i % 2 ? -24 : 24, ease: 'none',
-          scrollTrigger: { trigger: '.granizados', start: 'top bottom', end: 'bottom top', scrub: true } });
-      });
-    }, root);
-    return () => ctx.revert();
+  useEffect(() => {
+    const measure = () => {
+      if (headerRef.current) setHeaderHeight(headerRef.current.offsetHeight);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
   }, []);
+
+  const temp = (24 - scrollP * 36).toFixed(0);
+  const fillHeight = 12 + scrollP * 88;
+  const active = PREMIUM[activeIdx];
 
   return (
-    <div className="zg-landing" ref={root}>
-      {/* ============ NAV ============ */}
-      <header className="zg-nav">
-        <a className="zg-logo" href="#top">
-          <span className="zg-logo-badge">0°</span>
-          <span>Zero Grados</span>
-        </a>
-        <nav className="zg-links">
-          <a href="#premium">Helados</a>
-          <a href="#granizados">Granizados</a>
-          <a href="#enchilados">Enchilados</a>
-          <a href="#ubicacion">Dónde estamos</a>
-        </nav>
-        <button className="zg-btn zg-btn-sun" onClick={() => navigate('/login')}>Ingresar</button>
-      </header>
+    <div className="zg-landing">
+      {/* ===== Glow que sigue el cursor ===== */}
+      <div className="zg-glow-layer">
+        <div className="zg-glow" style={{ transform: `translate3d(${mouse.x}px,${mouse.y}px,0)` }}>
+          <div className="zg-glow-inner" />
+        </div>
+      </div>
 
-      {/* ============ HERO ============ */}
-      <section className="hero" id="top">
-        <div className="hero-bg-gradient" />
-        {/* scoops decorativos flotantes */}
-        <img ref={addScoop} className="scoop s1" alt="" src="https://cdn-icons-png.flaticon.com/512/938/938063.png" />
-        <img ref={addScoop} className="scoop s2" alt="" src="https://cdn-icons-png.flaticon.com/512/2738/2738730.png" />
-        <img ref={addScoop} className="scoop s3" alt="" src="https://cdn-icons-png.flaticon.com/512/3081/3081967.png" />
-        <img ref={addScoop} className="scoop s4" alt="" src="https://cdn-icons-png.flaticon.com/512/1147/1147805.png" />
+      {/* ===== Barra de "Descenso" / temperatura ===== */}
+      <div className="zg-progress">
+        <div className="zg-progress-label">Descenso</div>
+        <div className="zg-progress-track">
+          <div className="zg-progress-fill" style={{ height: `${fillHeight}%` }} />
+        </div>
+        <div className="zg-progress-temp">{temp}°</div>
+      </div>
 
-        <div className="hero-inner">
-          <span className="hero-eyebrow reveal-now">Heladería · Linares, Nariño</span>
-          <h1 className="hero-title">
-            <span className="hero-line-wrap"><span className="hero-line">Tu pausa</span></span>
-            <span className="hero-line-wrap"><span className="hero-line accent">fresca</span></span>
-            <span className="hero-line-wrap"><span className="hero-line">bajo cero.</span></span>
-          </h1>
-          <p className="hero-sub">Helados premium, granizados 100% naturales y gomas enchiladas. Frescura que se disfruta, sabor que enamora.</p>
-          <div className="hero-cta">
-            <a href="#premium" className="zg-btn zg-btn-primary">Ver el menú <span>🍦</span></a>
-            <a href="#ubicacion" className="zg-btn zg-btn-ghost">Cómo llegar</a>
+      {/* ================= HERO ================= */}
+      <section className="zg-hero" data-screen-label="Hero">
+        <div className="zg-hero-blob" />
+        <div className="zg-hero-dots" />
+
+        <header
+          ref={headerRef}
+          className={`zg-header${scrolled ? ' zg-header--scrolled' : ''}`}
+        >
+          <div className="zg-brand">
+            <div className="zg-brand-badge">0°</div>
+            <div className="zg-brand-name">Zero Grados</div>
           </div>
-          <div className="hero-badges">
-            <span>❄️ Hechos al momento</span>
-            <span>🌿 100% naturales</span>
-            <span>⭐ Calidad Colombina</span>
+          <nav className="zg-nav">
+            <a href="#premium" className="zg-nav-link cyan">Premium</a>
+            <a href="#enchilada" className="zg-nav-link red">Enchilada</a>
+            <a href="#granizados" className="zg-nav-link cyan">Granizados</a>
+            <a href="#promo" className="zg-nav-link yellow">Promo</a>
+            <a href="#visitanos" className="zg-nav-cta">Ir a Don Efra</a>
+          </nav>
+        </header>
+        <div className="zg-header-spacer" style={{ height: headerHeight }} />
+
+        <div className="zg-hero-content">
+          <div className="zg-hero-eyebrow">
+            <span className="zg-hero-dot" />Linares · Nariño · Restaurantes Don Efra
+          </div>
+
+
+          <div className="zg-hero-orbit">
+            <img src="/assets/logo-full.png" alt="Heladería Zero Grados" className="zg-hero-logo" />
+            <div className="zg-hero-ring" />
+            <div className="zg-hero-orb a">
+              <img src="/assets/premium1.png" alt="Copa Don Efra" />
+            </div>
+            <div className="zg-hero-orb b">
+              <img src="/assets/gran1.png" alt="Granizado de maracuyá" />
+            </div>
+            <div className="zg-hero-orb c">
+              <img src="/assets/ench2.png" alt="Gomitas enchiladas" />
+            </div>
+          </div>
+
+          <div className="zg-hero-ctas">
+            <a href="#premium" className="zg-btn zg-btn-cream">Ver la carta completa</a>
+            <a href="#promo" className="zg-btn zg-btn-outline">{PROMO_PERCENT}% con tu tiquete</a>
           </div>
         </div>
 
-        {/* cinta corredora */}
-        <div className="marquee">
-          <div className="marquee-track">
-            {Array(2).fill(0).map((_, k) => (
-              <span key={k}>Helados&nbsp;·&nbsp;Granizados&nbsp;·&nbsp;Gomas enchiladas&nbsp;·&nbsp;Chamoyadas&nbsp;·&nbsp;Coctelería glacial&nbsp;·&nbsp;</span>
+        <div className="zg-marquee-band">
+          <div className="zg-marquee-track">
+            {[0, 1].map((k) => (
+              <div className="zg-marquee-set" key={k}>
+                <span>{TICKER_TEXT}</span><span className="star">✳</span>
+                <span>Hecho al momento</span><span className="star cyan">✳</span>
+                <span>{TICKER_TEXT}</span><span className="star">✳</span>
+                <span>Fruta 100% natural</span><span className="star cyan">✳</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="zg-scallop" />
+      </section>
+
+      {/* ================= SE OFRECE (4 formas) ================= */}
+      <section className="zg-oferta" data-screen-label="Se ofrece">
+        <div className="zg-wrap">
+          <div className="zg-oferta-head">
+            <h2>Cuatro formas<br /><span className="cyan">de bajar a cero</span></h2>
+            <p>Del helado premium a la chamoyada más adictiva del Nariño. Todo servido en tu pausa fresca dentro de Restaurantes Don Efra.</p>
+          </div>
+
+          <div className="zg-oferta-grid">
+            {OFERTA.map((o) => (
+              <article className={`zg-oferta-card ${o.cls}`} key={o.title}>
+                <div className="zg-oferta-img"><img src={o.img} alt={o.alt} /></div>
+                <div className="zg-oferta-num" style={{ color: o.numColor }}>{o.num}</div>
+                <h3 style={{ color: o.titleColor }}>{o.title}</h3>
+                <p style={{ color: o.textColor }}>{o.text}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ SE OFRECE ============ */}
-      <section className="oferta" id="oferta">
-        <div className="oferta-head reveal">
-          <span className="kicker">Se ofrece</span>
-          <h2>Cuatro formas de <em>enfriar el día</em></h2>
-        </div>
-        <div className="oferta-grid">
-          {OFERTA.map((o) => (
-            <article className="oferta-item" key={o.t}>
-              <div className="oferta-emoji">{o.e}</div>
-              <h3>{o.t}</h3>
-              <p>{o.d}</p>
-            </article>
-          ))}
+      {/* ================= HELADERÍA PREMIUM ================= */}
+      <section id="premium" className="zg-premium" data-screen-label="Heladería">
+        <div className="zg-premium-blob" />
+        <div className="zg-wrap">
+          <div className="zg-section-tag">
+            <span className="zg-kicker pill">Cámara I</span>
+            <span className="script">Con la calidad de Helados Colombina</span>
+          </div>
+          <h2 className="title">Heladería premium</h2>
+
+          <div className="zg-premium-grid">
+            <div className="zg-premium-stage">
+              <div className="zg-premium-ring" />
+              <div className="zg-premium-photo">
+                <img src={active.img} alt={active.name} />
+              </div>
+              <div className="zg-premium-price">{active.price}</div>
+            </div>
+
+            <div className="zg-premium-desc">
+              <p>{active.desc}</p>
+              {PREMIUM.map((it, i) => (
+                <button
+                  type="button"
+                  key={it.name}
+                  className={`zg-premium-item ${i === activeIdx ? 'active' : ''}`}
+                  onClick={() => setActiveIdx(i)}
+                >
+                  <span className="bar" />
+                  <span className="info">
+                    <span className="name">{it.name}</span>
+                    <span className="sub">{it.sub}</span>
+                  </span>
+                  <span className="price">{it.price}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ============ BANDA DE TEMPERATURA (firma visual) ============ */}
-      <section className="temp-band">
-        <div className="blob blob-a" />
-        <div className="temp-inner reveal">
-          <div className="temp-big"><span className="temp-count">30</span><span className="deg">°</span></div>
-          <p>El punto exacto en el que un antojo se vuelve <strong>tu pausa perfecta</strong>. Todo lo batimos y congelamos al momento, sin sabores artificiales.</p>
-        </div>
-      </section>
+      {/* ================= EXPERIENCIA ENCHILADA ================= */}
+      <section id="enchilada" className="zg-enchilada" data-screen-label="Experiencia Enchilada">
+        <div className="zg-enchilada-dots" />
+        <div className="zg-wrap">
+          <div className="zg-section-tag">
+            <span className="zg-kicker pill">Cámara II</span>
+            <span className="script">Ácido, picante y adictivo</span>
+          </div>
+          <h2 className="title">Experiencia<br /><span className="outline">enchilada</span></h2>
 
-      {/* ============ HELADERÍA PREMIUM ============ */}
-      <section className="premium" id="premium">
-        <div className="section-head reveal">
-          <span className="kicker">Heladería premium</span>
-          <h2>Con la calidad de <em>Helados Colombina</em></h2>
-          <p className="section-lead">Copas artesanales pensadas para compartir (o no).</p>
-        </div>
-        <div className="premium-grid">
-          {PREMIUM.map((c) => (
-            <article className="pcard" key={c.n}>
-              <div className="pcard-img"><img src={c.img} alt={c.n} loading="lazy" /></div>
-              <div className="pcard-body">
-                <div className="pcard-top">
-                  <h3>{c.n}</h3>
-                  <span className="pcard-price">{c.p}</span>
+          <div className="zg-ench-grid">
+            <article className="zg-ench-card">
+              <div className="zg-ench-img"><img src="/assets/ench1.png" alt="Granizados enchilados" /></div>
+              <div className="zg-ench-top">
+                <div>
+                  <h3>Granizados enchilados</h3>
+                  <div className="sub">(Chamoyadas)</div>
                 </div>
-                <span className="pcard-sub">{c.s}</span>
-                <p>{c.d}</p>
+                <div className="zg-ench-price">$9.500</div>
+              </div>
+              <p className="desc">Tu sabor favorito en vaso totalmente escarchado con chile en polvo tajín y salsa chamoy artesanal de la casa.</p>
+              <div className="zg-ench-tags">
+                <span>Escarchado</span>
+                <span>Tajín</span>
+                <span>Chamoy de la casa</span>
               </div>
             </article>
-          ))}
-        </div>
-      </section>
 
-      {/* ============ GRANIZADOS ============ */}
-      <section className="granizados" id="granizados">
-        <div className="blob blob-b" />
-        <div className="section-head reveal">
-          <span className="kicker">Granizados 100% naturales</span>
-          <h2>Felicidad <em>bajo cero</em>, directo de la máquina</h2>
-          <div className="gran-sizes reveal">
-            <span>Vaso mediano (12 oz) · <strong>$7.500</strong></span>
-            <span>Vaso grande (16 oz) · <strong>$9.500</strong></span>
-          </div>
-        </div>
-        <div className="gran-grid">
-          {GRANIZADOS.map((g) => (
-            <article className="gcard" key={g.n} style={{ '--gc': g.c }}>
-              <div className="gcard-img"><img src={g.img} alt={g.n} loading="lazy" /></div>
-              <h3>{g.n}</h3>
-              <p>{g.d}</p>
+            <article className="zg-ench-card">
+              <div className="zg-ench-img"><img src="/assets/ench2.png" alt="Gomitas enchiladas" /></div>
+              <div className="zg-ench-top">
+                <div>
+                  <h3>Gomitas enchiladas</h3>
+                  <div className="sub">Porción Zero Grados</div>
+                </div>
+                <div className="zg-ench-price">$5.500</div>
+              </div>
+              <p className="desc">Porción generosa de gomitas surtidas marinadas en jugo de limón, chamoy especial y una lluvia de polvo picante.</p>
+              <div className="zg-ench-tags">
+                <span>Limón</span>
+                <span>Surtidas</span>
+                <span>Nivel picante 3</span>
+              </div>
             </article>
-          ))}
-        </div>
-      </section>
-
-      {/* ============ ENCHILADOS (experiencia) ============ */}
-      <section className="enchilados" id="enchilados">
-        <div className="ench-grid">
-          <div className="ench-copy reveal">
-            <span className="kicker light">Experiencia enchilada</span>
-            <h2>Ácido, picante <em>y adictivo</em></h2>
-            <ul className="ench-list">
-              <li>
-                <div><strong>Granizados enchilados (chamoyadas)</strong><span>Vaso escarchado con chile, tajín y chamoy artesanal de la casa.</span></div>
-                <span className="ench-price">$9.500</span>
-              </li>
-              <li>
-                <div><strong>Gomitas enchiladas Zero Grados</strong><span>Gomitas surtidas marinadas en limón, chamoy especial y lluvia de polvo picante.</span></div>
-                <span className="ench-price">$5.500</span>
-              </li>
-            </ul>
-            <p className="ench-note">Y para los adultos: <strong>granizados con alcohol</strong> 🍹 la versión atrevida de tu pausa fresca.</p>
-          </div>
-          <div className="ench-media reveal">
-            <img src="https://images.unsplash.com/photo-1571506165871-ee72a35bc9d4?w=700&q=80" alt="Granizado enchilado con chamoy" loading="lazy" />
-            <div className="ench-tag">🌶️ Picante nivel: adictivo</div>
           </div>
         </div>
       </section>
 
-      {/* ============ PROMO ============ */}
-      <section className="promo reveal" id="promo">
-        <div className="promo-card">
-          <div className="promo-fish">🎣</div>
+      {/* ================= GRANIZADOS 100% NATURALES ================= */}
+      <section id="granizados" className="zg-granizados" data-screen-label="Granizados naturales">
+        <div className="zg-drop a" />
+        <div className="zg-drop b" />
+        <div className="zg-drop c" />
+
+        <div className="zg-wrap">
+          <div className="zg-gran-head">
+            <div>
+              <div className="tag-row zg-section-tag">
+                <span className="zg-kicker pill">Cámara III</span>
+                <span className="script">Felicidad bajo cero, directo de la máquina</span>
+              </div>
+              <h2 className="title">Granizados<br /><span className="cyan">100% naturales</span></h2>
+            </div>
+            <div className="zg-gran-sizes">
+              <div className="zg-gran-size-card">
+                <div className="label">Vaso mediano · 12 oz</div>
+                <div className="price">$7.500</div>
+              </div>
+              <div className="zg-gran-size-card">
+                <div className="label">Vaso grande · 16 oz</div>
+                <div className="price">$9.500</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="zg-gran-grid">
+            {GRANIZADOS.map((g) => (
+              <article className="zg-gran-card" key={g.name}>
+                <div className="zg-gran-img"><img src={g.img} alt={g.name} /></div>
+                <div className="zg-gran-body">
+                  <div className="kicker">Granizado</div>
+                  <h3>{g.name}</h3>
+                  <p>{g.desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="zg-gran-badges">
+            <span className="badge"><span className="dot" style={{ background: '#37D0DE' }} />Fruta 100% natural</span>
+            <span className="badge"><span className="dot" style={{ background: '#FFD52E' }} />Hechos al momento</span>
+            <span className="badge"><span className="dot" style={{ background: '#FFF9EC' }} />Sin sabores artificiales</span>
+            <span className="badge"><span className="dot" style={{ background: '#E8503E' }} />Cítricos locales de Linares</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= PROMO ================= */}
+      <section id="promo" className="zg-promo" data-screen-label="Promoción">
+        <div className="zg-promo-grid">
           <div>
-            <span className="kicker light">Promoción</span>
-            <h2>¿Pescaste tu trucha o ya almorzaste?</h2>
-            <p>Muestra tu tiquete de <strong>Restaurantes Don Efra</strong> y recibe un <b>10% de descuento</b> en tu postre helado.</p>
+            <span className="zg-kicker">Promoción de apertura</span>
+            <h2>¿Pesaste tu trucha<br />o ya almorzaste?</h2>
+            <p className="lead">Muestra tu tiquete de Restaurantes Don Efra y recibe <strong>{PROMO_PERCENT}% de descuento</strong> en tu postre helado. Un día de campo y pesca merece cerrarse bajo cero.</p>
+            <div className="zg-promo-ctas">
+              <a href="#visitanos" className="zg-btn zg-btn-dark">Cómo llegar</a>
+              <a href="#premium" className="zg-btn zg-btn-outline-dark">Ver la carta</a>
+            </div>
           </div>
-          <div className="promo-off"><span>10%</span><small>OFF</small></div>
+
+          <div className="zg-ticket-wrap">
+            <div className="zg-ticket">
+              <div className="zg-ticket-top">
+                <div className="script">Tiquete Don Efra</div>
+                <div className="zg-ticket-badge">0°</div>
+              </div>
+              <div className="zg-ticket-dash" />
+              <div className="zg-ticket-big">{PROMO_PERCENT}%</div>
+              <div className="zg-ticket-sub">de descuento en tu postre helado</div>
+              <div className="zg-ticket-dash" />
+              <div className="zg-ticket-foot">
+                <span>Presenta este tiquete en caja</span><span>Linares · Nariño</span>
+              </div>
+              <div className="zg-ticket-hole left" />
+              <div className="zg-ticket-hole right" />
+            </div>
+            <img src="/assets/logo-helados.png" alt="Zero Grados" className="zg-ticket-logo" />
+          </div>
         </div>
       </section>
 
-      {/* ============ UBICACIÓN ============ */}
-      <section className="ubicacion" id="ubicacion">
-        <div className="ubi-grid">
-          <div className="ubi-copy reveal">
-            <span className="kicker light">Encuéntranos</span>
-            <h2>Estamos en <em>Linares, Nariño</em></h2>
-            <p className="ubi-lead">Tu pausa fresca dentro de Restaurantes Don Efra. Ven por tu antojo bajo cero.</p>
-            <div className="ubi-info">
-              <div><span className="ubi-k">📍 Lugar</span><span>Restaurantes Don Efra — Linares, Nariño</span></div>
-              <div><span className="ubi-k">🕑 Horario</span><span>Todos los días · 11:00 a.m. – 9:00 p.m.</span></div>
-              <div><span className="ubi-k">📞 WhatsApp</span><span>+57 300 000 0000</span></div>
+      {/* ================= VISÍTANOS / FOOTER ================= */}
+      <section id="visitanos" className="zg-visitanos" data-screen-label="Visítanos">
+        <div className="zg-wrap">
+          <div className="zg-visit-grid">
+            <div>
+              <div className="eyebrow">Tu pausa fresca está en</div>
+              <h2>Linares<br /><span className="script">Nariño</span></h2>
+              <p className="desc">Dentro de Restaurantes Don Efra, junto al lago de pesca deportiva. Abierto todos los días de 10:00 a 20:00.</p>
             </div>
-            <div className="ubi-cta">
-              <a className="zg-btn zg-btn-primary" href="https://wa.me/573000000000" target="_blank" rel="noreferrer">Escríbenos <span>💬</span></a>
-              <div className="ubi-social">
-                <a href="#" aria-label="Instagram">◐</a>
-                <a href="#" aria-label="Facebook">f</a>
-                <a href="#" aria-label="TikTok">♪</a>
+            <div className="zg-visit-cards">
+              <div className="zg-visit-card">
+                <span className="label">Pesca deportiva</span>
+                <span className="value">Todo el día</span>
+              </div>
+              <div className="zg-visit-card">
+                <span className="label">Domicilios</span>
+                <span className="value">WhatsApp</span>
+              </div>
+              <div className="zg-visit-card highlight">
+                <span className="label">Coctelería glacial</span>
+                <span className="value">+18 años</span>
               </div>
             </div>
           </div>
-          <div className="ubi-map reveal">
-            <iframe title="Ubicación Zero Grados" loading="lazy"
-              src="https://www.google.com/maps?q=Linares,Nari%C3%B1o,Colombia&output=embed" />
+
+          <div className="zg-foot-row">
+            <div className="script">Frescura que se disfruta, sabor que enamora</div>
+            <div className="zg-foot-legal">
+              <span>© Heladería Zero Grados</span><span>·</span>
+              <span>Restaurantes Don Efra</span><span>·</span>
+              <span>Linares, Nariño</span><span>·</span>
+              <Link to="/login" style={{ color: 'rgba(255,249,236,.6)' }}>Ingresar al sistema</Link>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* ============ FOOTER ============ */}
-      <footer className="zg-foot">
-        <div className="foot-top">
-          <div className="foot-brand">
-            <div className="zg-logo big"><span className="zg-logo-badge">0°</span><span>Zero Grados</span></div>
-            <p>Tu pausa fresca en Restaurantes Don Efra · Linares, Nariño.<br />Frescura que se disfruta, sabor que enamora.</p>
-          </div>
-          <div className="foot-cols">
-            <div>
-              <h4>Menú</h4>
-              <a href="#premium">Heladería premium</a>
-              <a href="#granizados">Granizados naturales</a>
-              <a href="#enchilados">Enchilados</a>
-              <a href="#enchilados">Con alcohol</a>
-            </div>
-            <div>
-              <h4>Zero Grados</h4>
-              <a href="#promo">Promociones</a>
-              <a href="#ubicacion">Ubicación</a>
-              <a href="/login">Ingresar al sistema</a>
-            </div>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <span>© {new Date().getFullYear()} Heladería Zero Grados · Todos los derechos reservados.</span>
-          <span>Hecho con frescura en Nariño 💚</span>
-        </div>
-      </footer>
     </div>
   );
 }
