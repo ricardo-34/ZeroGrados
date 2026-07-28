@@ -1,0 +1,272 @@
+/* ============================================================
+   ZERO GRADOS · Tema "Premium Ice Cream"
+   ------------------------------------------------------------
+   Aplica la estética del diseño premium a las clases y
+   variables que ya usan tus componentes. NO cambia ninguna
+   función ni lógica: solo redefine la apariencia.
+
+   Uso: impórtalo UNA sola vez en tu entrada (ej. main.jsx):
+        import './styles/theme-zerogrados.css';
+   Colócalo DESPUÉS de tu CSS base para que gane la cascada.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Pacifico&family=Rubik:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap');
+
+:root {
+  /* --- Paleta del diseño premium --- */
+  --zg-crema: #F7F1E3;          /* fondo app */
+  --zg-crema-2: #FBF7EE;        /* superficies suaves */
+  --zg-blanco: #FFFFFF;         /* tarjetas */
+  --zg-marfil: #FFF9EC;         /* texto sobre oscuro */
+  --zg-verde-900: #062F2D;      /* sidebar / oscuro */
+  --zg-verde-800: #0B4F4C;      /* texto principal / botón */
+  --zg-verde-700: #0E8C86;      /* etiquetas / acentos */
+  --zg-verde-600: #12A29A;      /* hover / activo */
+  --zg-cian: #37D0DE;           /* realce */
+  --zg-cian-100: #BFF3F5;
+  --zg-amarillo: #FFD52E;       /* detalle */
+  --zg-rojo: #E8503E;           /* peligro */
+  --zg-rojo-900: #8E2318;
+  --zg-borde: rgba(11, 79, 76, .12);
+  --zg-borde-fuerte: rgba(11, 79, 76, .18);
+  --zg-texto-suave: rgba(11, 79, 76, .60);
+
+  /* --- Mapeo a TUS variables existentes (compatibilidad) --- */
+  --verde-oscuro: var(--zg-verde-900);
+  --verde-bosque: var(--zg-verde-800);
+  --verde-esmeralda: var(--zg-verde-700);
+  --ambar: var(--zg-amarillo);
+  --azul: var(--zg-cian);
+  --rojo: var(--zg-rojo);
+  --gris-borde: var(--zg-borde);
+  --gris-texto: #5b6b68;
+  --gris-estado: #9aa7a4;
+}
+
+/* ---------- Base ---------- */
+body {
+  margin: 0;
+  background: var(--zg-crema);
+  color: var(--zg-verde-800);
+  font-family: Rubik, system-ui, sans-serif;
+  text-wrap: pretty;
+}
+
+::selection { background: var(--zg-cian); color: var(--zg-verde-900); }
+
+a { color: var(--zg-verde-700); text-decoration: none; }
+a:hover { color: var(--zg-verde-600); }
+
+h1, h2, h3, h4 {
+  font-family: Anton, Rubik, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  color: var(--zg-verde-800);
+  line-height: 1.05;
+}
+h1 { font-size: clamp(28px, 3.4vw, 42px); margin: 0 0 4px; }
+h2 { font-size: clamp(20px, 2.4vw, 26px); }
+h3 { font-size: 17px; letter-spacing: .04em; }
+
+/* ---------- Utilidades de layout que ya usas ---------- */
+.mb { margin-bottom: 16px; }
+.mt { margin-top: 16px; }
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.gap-sm { gap: 8px; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.text-right { text-align: right; }
+.text-muted { color: var(--zg-texto-suave); }
+.text-danger { color: var(--zg-rojo); }
+.text-success { color: var(--zg-verde-600); }
+
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 720px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+.big-number {
+  font-family: Anton, Rubik, sans-serif;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1;
+  color: var(--zg-verde-800);
+  margin-top: 8px;
+}
+
+/* ---------- Tarjetas ---------- */
+.card {
+  background: var(--zg-blanco);
+  border: 1px solid var(--zg-borde);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(6, 47, 45, .05);
+}
+.card .card {
+  border-radius: 16px;
+  box-shadow: none;
+  background: var(--zg-crema-2);
+}
+
+/* ---------- Campos de formulario ---------- */
+.field { margin-bottom: 14px; }
+.field > label,
+.field label {
+  display: block;
+  font: 700 11px/1 Rubik;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--zg-verde-700);
+  margin-bottom: 8px;
+}
+
+.input,
+.select,
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="date"], input[type="search"],
+select, textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: 500 15px/1.2 Rubik;
+  color: var(--zg-verde-800);
+  background: var(--zg-crema-2);
+  border: 2px solid var(--zg-borde-fuerte);
+  border-radius: 14px;
+  padding: 14px 16px;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.input:focus,
+.select:focus,
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  background: var(--zg-blanco);
+  border-color: var(--zg-verde-600);
+  box-shadow: 0 0 0 4px rgba(55, 208, 222, .18);
+}
+.input::placeholder, textarea::placeholder { color: rgba(11, 79, 76, .38); }
+.select { appearance: none; cursor: pointer; padding-right: 40px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--zg-verde-700) 50%),
+                    linear-gradient(135deg, var(--zg-verde-700) 50%, transparent 50%);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+textarea { line-height: 1.5; }
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font: 700 13.5px/1 Rubik;
+  font-family: Rubik;
+  border-radius: 999px;
+  padding: 13px 20px;
+  border: 2px solid transparent;
+  transition: transform .18s, box-shadow .18s, background .2s, border-color .2s, color .2s;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: .55; cursor: default; transform: none !important; box-shadow: none !important; }
+.btn-sm { padding: 9px 14px; font-size: 12.5px; }
+.btn-block { display: flex; width: 100%; }
+
+.btn-primary {
+  background: var(--zg-verde-800);
+  color: var(--zg-marfil);
+  box-shadow: 0 7px 0 var(--zg-verde-900);
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(3px); box-shadow: 0 4px 0 var(--zg-verde-900); color: var(--zg-amarillo); }
+
+.btn-secondary {
+  background: var(--zg-verde-600);
+  color: var(--zg-marfil);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--zg-verde-700); }
+
+.btn-outline {
+  background: var(--zg-blanco);
+  color: var(--zg-verde-800);
+  border-color: var(--zg-borde-fuerte);
+}
+.btn-outline:hover:not(:disabled) { background: rgba(55, 208, 222, .16); border-color: var(--zg-verde-600); transform: translateY(-2px); }
+
+.btn-danger {
+  background: var(--zg-rojo);
+  color: var(--zg-marfil);
+}
+.btn-danger:hover:not(:disabled) { background: var(--zg-rojo-900); }
+
+/* ---------- Tablas ---------- */
+.table-wrap { overflow-x: auto; border-radius: 14px; }
+.tbl { border-collapse: collapse; width: 100%; }
+.tbl th {
+  font: 700 11px/1 Rubik;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--zg-verde-700);
+  text-align: left;
+  padding: 0 14px 12px;
+  white-space: nowrap;
+}
+.tbl td {
+  font: 500 14px/1.3 Rubik;
+  color: var(--zg-verde-800);
+  padding: 13px 14px;
+  border-top: 1px solid rgba(11, 79, 76, .10);
+}
+.tbl tbody tr { transition: background .15s; }
+.tbl tbody tr:hover { background: rgba(55, 208, 222, .07); }
+
+/* ---------- Badges / estados ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 11px/1 Rubik;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: var(--zg-marfil);
+  background: var(--zg-verde-700);
+}
+.badge-completada { background: rgba(18,162,154,.16); color: var(--zg-verde-700); }
+.badge-anulada,
+.badge-cancelado { background: rgba(232,80,62,.14); color: var(--zg-rojo-900); }
+
+/* Estados por texto (por si tu <Badge> añade clases o data-estado) */
+.badge[data-estado="pendiente"],  .badge.estado-pendiente  { background: rgba(255,213,46,.20);  color: #7a5a00; }
+.badge[data-estado="preparando"], .badge.estado-preparando { background: rgba(55,208,222,.18);  color: #086974; }
+.badge[data-estado="listo"],      .badge.estado-listo      { background: rgba(18,162,154,.18);  color: var(--zg-verde-700); }
+.badge[data-estado="entregado"],  .badge.estado-entregado  { background: rgba(11,79,76,.12);    color: var(--zg-verde-800); }
+.badge[data-estado="cancelado"],  .badge.estado-cancelado  { background: rgba(232,80,62,.14);   color: var(--zg-rojo-900); }
+
+/* ---------- Alertas (componente <Alert>) ---------- */
+.alert { border-radius: 16px; padding: 13px 16px; font: 500 14px/1.4 Rubik; margin-bottom: 14px; border: 1px solid transparent; }
+.alert-error,   .alert.error   { background: rgba(232,80,62,.12);  border-color: rgba(232,80,62,.4);  color: var(--zg-rojo-900); }
+.alert-success, .alert.success { background: rgba(18,162,154,.12); border-color: rgba(18,162,154,.4); color: var(--zg-verde-700); }
+.alert-warn,    .alert.warn    { background: rgba(255,213,46,.16); border-color: rgba(255,213,46,.5); color: #7a5a00; }
+
+/* ---------- Mesero (grillas propias) ---------- */
+.mesero-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .mesero-grid { grid-template-columns: 1fr; } }
+.mesero-productos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.mesero-producto-card {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--zg-crema-2);
+  border: 1px solid var(--zg-borde-fuerte);
+  border-radius: 16px;
+  padding: 12px;
+  transition: transform .2s, border-color .2s, background .2s;
+}
+.mesero-producto-card:hover { border-color: var(--zg-verde-600); background: var(--zg-blanco); transform: translateY(-3px); }
+.mesero-producto-main { text-align: left; cursor: pointer; background: transparent; border: none; padding: 4px; font-family: Rubik; }
+.mesero-producto-detalle-btn { width: 100%; }
+
+/* ---------- Tickets térmicos (mantener legibles al imprimir) ---------- */
+.ticket { color: #000; background: #fff; font-family: 'Courier New', monospace; }
